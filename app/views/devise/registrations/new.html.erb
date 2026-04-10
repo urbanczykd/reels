@@ -1,0 +1,54 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-950 px-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">🎬</div>
+      <h1 class="text-3xl font-bold text-white">ReelMaker</h1>
+      <p class="text-gray-400 mt-1">Create your account</p>
+    </div>
+
+    <div class="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+        <% if resource.errors.any? %>
+          <div class="bg-red-900/50 border border-red-700 rounded-lg p-4 mb-4">
+            <% resource.errors.full_messages.each do |msg| %>
+              <p class="text-red-300 text-sm"><%= msg %></p>
+            <% end %>
+          </div>
+        <% end %>
+
+        <div class="space-y-4">
+          <div>
+            <%= f.label :name, class: "block text-sm text-gray-400 mb-1" %>
+            <%= f.text_field :name, autofocus: true,
+                class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "Your name" %>
+          </div>
+          <div>
+            <%= f.label :email, class: "block text-sm text-gray-400 mb-1" %>
+            <%= f.email_field :email, autocomplete: "email",
+                class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "you@example.com" %>
+          </div>
+          <div>
+            <%= f.label :password, class: "block text-sm text-gray-400 mb-1" %>
+            <%= f.password_field :password, autocomplete: "new-password",
+                class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "At least 6 characters" %>
+          </div>
+          <div>
+            <%= f.label :password_confirmation, "Confirm Password", class: "block text-sm text-gray-400 mb-1" %>
+            <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                placeholder: "••••••••" %>
+          </div>
+          <%= f.submit "Create Account", class: "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg cursor-pointer transition-colors mt-2" %>
+        </div>
+      <% end %>
+
+      <p class="text-center text-gray-500 text-sm mt-6">
+        Already have an account?
+        <%= link_to "Sign in →", new_session_path(resource_name), class: "text-indigo-400 hover:text-indigo-300" %>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,100 @@
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-white mb-2">Social Media Connections</h1>
+  <p class="text-gray-400 mb-8">Connect your accounts to publish reels directly.</p>
+
+  <div class="space-y-4">
+    <!-- YouTube -->
+    <% youtube = current_user.social_account_for("google_oauth2") %>
+    <div class="bg-gray-800 rounded-xl p-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-red-700 rounded-xl flex items-center justify-center text-2xl">▶️</div>
+        <div>
+          <div class="font-semibold text-white">YouTube Shorts</div>
+          <div class="text-sm text-gray-400">
+            <% if youtube %>
+              Connected as <span class="text-green-400"><%= youtube.username %></span>
+            <% else %>
+              Not connected
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <div>
+        <% if youtube %>
+          <%= button_to "Disconnect", social_account_path(youtube), method: :delete,
+              data: { turbo_confirm: "Disconnect YouTube?" },
+              class: "text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-600 px-4 py-2 rounded-lg" %>
+        <% else %>
+          <%= link_to "Connect YouTube", user_google_oauth2_omniauth_authorize_path,
+              data: { turbo: false },
+              class: "text-sm bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg inline-block" %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Instagram -->
+    <% instagram = current_user.social_account_for("facebook") %>
+    <div class="bg-gray-800 rounded-xl p-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-pink-600 to-purple-700 rounded-xl flex items-center justify-center text-2xl">📸</div>
+        <div>
+          <div class="font-semibold text-white">Instagram Reels</div>
+          <div class="text-sm text-gray-400">
+            <% if instagram %>
+              Connected as <span class="text-green-400"><%= instagram.username %></span>
+            <% else %>
+              Not connected — requires Business/Creator account
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <div>
+        <% if instagram %>
+          <%= button_to "Disconnect", social_account_path(instagram), method: :delete,
+              data: { turbo_confirm: "Disconnect Instagram?" },
+              class: "text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-600 px-4 py-2 rounded-lg" %>
+        <% else %>
+          <%= link_to "Connect Instagram", user_facebook_omniauth_authorize_path,
+              data: { turbo: false },
+              class: "text-sm bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-4 py-2 rounded-lg inline-block" %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- TikTok -->
+    <% tiktok = current_user.social_account_for("tiktok") %>
+    <div class="bg-gray-800 rounded-xl p-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gray-900 border border-gray-700 rounded-xl flex items-center justify-center text-2xl">🎵</div>
+        <div>
+          <div class="font-semibold text-white">TikTok</div>
+          <div class="text-sm text-gray-400">
+            <% if tiktok %>
+              Connected as <span class="text-green-400"><%= tiktok.username %></span>
+            <% else %>
+              Not connected — requires TikTok for Developers account
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <div>
+        <% if tiktok %>
+          <%= button_to "Disconnect", social_account_path(tiktok), method: :delete,
+              data: { turbo_confirm: "Disconnect TikTok?" },
+              class: "text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-600 px-4 py-2 rounded-lg" %>
+        <% else %>
+          <%= link_to "Connect TikTok", user_tiktok_omniauth_authorize_path,
+              data: { turbo: false },
+              class: "text-sm bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg inline-block" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 bg-gray-800/50 border border-gray-700 rounded-xl p-5 text-sm text-gray-400 space-y-2">
+    <p class="font-medium text-gray-300">📋 Requirements</p>
+    <p>• <strong class="text-gray-200">YouTube:</strong> Any Google account with YouTube channel</p>
+    <p>• <strong class="text-gray-200">Instagram:</strong> Business or Creator account linked to a Facebook Page</p>
+    <p>• <strong class="text-gray-200">TikTok:</strong> TikTok Developer app with Content Posting API access</p>
+  </div>
+</div>

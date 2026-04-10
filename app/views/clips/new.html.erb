@@ -1,0 +1,105 @@
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-white mb-8">Create New Reel</h1>
+
+  <%= form_with model: @clip, class: "space-y-6" do |f| %>
+    <% if @clip.errors.any? %>
+      <div class="bg-red-900/50 border border-red-700 rounded-lg p-4">
+        <% @clip.errors.full_messages.each do |msg| %>
+          <p class="text-red-300 text-sm"><%= msg %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :title, class: "block text-sm font-medium text-gray-300 mb-1" %>
+      <%= f.text_field :title,
+          class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+          placeholder: "My Amazing Reel" %>
+    </div>
+
+    <div>
+      <%= f.label :description, class: "block text-sm font-medium text-gray-300 mb-1" %>
+      <%= f.text_area :description, rows: 3,
+          class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+          placeholder: "Optional description to help AI generate better captions..." %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= f.label :duration, "Duration (seconds)", class: "block text-sm font-medium text-gray-300 mb-1" %>
+        <%= f.select :duration, (5..10).to_a.map { |d| ["#{d} seconds", d] },
+            { selected: 7 },
+            class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      </div>
+
+      <div>
+        <%= f.label :transition_effect, "Transition Effect", class: "block text-sm font-medium text-gray-300 mb-1" %>
+        <%= f.select :transition_effect,
+            [["Fade", "fade"], ["Zoom", "zoom"], ["Slide", "slide"], ["Dissolve", "dissolve"]],
+            {},
+            class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Images <span class="text-gray-500">(2-20 images, will be shown in order)</span>
+      </label>
+      <div id="drop-zone"
+           class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-indigo-500 transition-colors cursor-pointer"
+           onclick="document.getElementById('images-input').click()">
+        <div class="text-4xl mb-2">📸</div>
+        <p class="text-gray-400">Drop images here or click to browse</p>
+        <p class="text-gray-600 text-sm mt-1">JPG, PNG, WebP up to 10MB each</p>
+      </div>
+      <%= f.file_field :images,
+          multiple: true,
+          accept: "image/*",
+          id: "images-input",
+          class: "hidden",
+          data: { action: "change->clip-upload#preview" } %>
+
+      <div id="image-preview" class="grid grid-cols-5 gap-2 mt-4 hidden"></div>
+      <p id="image-count" class="text-gray-500 text-sm mt-2"></p>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-4 text-sm text-gray-400">
+      <strong class="text-indigo-400">✨ AI-powered:</strong>
+      Ollama (llama3.2) will automatically generate an engaging caption and hashtags for your reel.
+    </div>
+
+    <div class="flex gap-4">
+      <%= f.submit "Create Reel →",
+          class: "flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg cursor-pointer transition-colors" %>
+      <%= link_to "Cancel", clips_path, class: "px-6 py-3 text-gray-400 hover:text-white" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.getElementById('images-input').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files).slice(0, 20);
+  const preview = document.getElementById('image-preview');
+  const count = document.getElementById('image-count');
+
+  preview.innerHTML = '';
+  preview.classList.remove('hidden');
+
+  files.forEach((file, i) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const div = document.createElement('div');
+      div.className = 'relative aspect-square bg-gray-700 rounded-lg overflow-hidden';
+      div.innerHTML = `
+        <img src="${ev.target.result}" class="w-full h-full object-cover" />
+        <span class="absolute top-1 left-1 bg-black/60 text-white text-xs px-1 rounded">${i + 1}</span>
+      `;
+      preview.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  count.textContent = `${files.length} image${files.length !== 1 ? 's' : ''} selected`;
+  if (files.length > 20) count.textContent += ' (max 20 will be used)';
+});
+</script>
