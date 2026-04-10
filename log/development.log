@@ -1,0 +1,47 @@
+[dotenv] Set [36mDATABASE_URL[0m, [36mREDIS_URL[0m, [36mOLLAMA_URL[0m, [36mOLLAMA_MODEL[0m, [36mAPP_HOST[0m, [36mGOOGLE_CLIENT_ID[0m, [36mGOOGLE_CLIENT_SECRET[0m, [36mFACEBOOK_APP_ID[0m, [36mFACEBOOK_APP_SECRET[0m, [36mTIKTOK_CLIENT_KEY[0m, [36mTIKTOK_CLIENT_SECRET[0m
+[dotenv] Loaded [33m.env[0m
+[dotenv] Set [36mDATABASE_URL[0m, [36mREDIS_URL[0m, [36mOLLAMA_URL[0m, [36mOLLAMA_MODEL[0m, [36mAPP_HOST[0m, [36mGOOGLE_CLIENT_ID[0m, [36mGOOGLE_CLIENT_SECRET[0m, [36mFACEBOOK_APP_ID[0m, [36mFACEBOOK_APP_SECRET[0m, [36mTIKTOK_CLIENT_KEY[0m, [36mTIKTOK_CLIENT_SECRET[0m
+[dotenv] Loaded [33m.env[0m
+[dotenv] Set [36mDATABASE_URL[0m, [36mREDIS_URL[0m, [36mOLLAMA_URL[0m, [36mOLLAMA_MODEL[0m, [36mAPP_HOST[0m, [36mGOOGLE_CLIENT_ID[0m, [36mGOOGLE_CLIENT_SECRET[0m, [36mFACEBOOK_APP_ID[0m, [36mFACEBOOK_APP_SECRET[0m, [36mTIKTOK_CLIENT_KEY[0m, [36mTIKTOK_CLIENT_SECRET[0m
+[dotenv] Loaded [33m.env[0m
+[dotenv] Set [36mDATABASE_URL[0m, [36mREDIS_URL[0m, [36mOLLAMA_URL[0m, [36mOLLAMA_MODEL[0m, [36mAPP_HOST[0m, [36mGOOGLE_CLIENT_ID[0m, [36mGOOGLE_CLIENT_SECRET[0m, [36mFACEBOOK_APP_ID[0m, [36mFACEBOOK_APP_SECRET[0m, [36mTIKTOK_CLIENT_KEY[0m, [36mTIKTOK_CLIENT_SECRET[0m
+[dotenv] Loaded [33m.env[0m
+  [1m[35m (210.7ms)[0m  [1m[35mCREATE DATABASE "reelmaker_development" ENCODING = 'unicode'[0m
+[dotenv] Set [36mDATABASE_URL[0m, [36mREDIS_URL[0m, [36mOLLAMA_URL[0m, [36mOLLAMA_MODEL[0m, [36mAPP_HOST[0m, [36mGOOGLE_CLIENT_ID[0m, [36mGOOGLE_CLIENT_SECRET[0m, [36mFACEBOOK_APP_ID[0m, [36mFACEBOOK_APP_SECRET[0m, [36mTIKTOK_CLIENT_KEY[0m, [36mTIKTOK_CLIENT_SECRET[0m
+[dotenv] Loaded [33m.env[0m
+  [1m[35m (54.9ms)[0m  [1m[35mCREATE DATABASE "reelmaker_development" ENCODING = 'unicode'[0m
+  [1m[35m (3.8ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY)[0m
+  [1m[35m (2.2ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_try_advisory_lock(4216972262891426850)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.6ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::InternalMetadata Create (0.4ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-04-10 14:51:59.125848', '2026-04-10 14:51:59.125849') RETURNING "key"[0m
+Migrating to CreateUsers (20260410000001)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (3.8ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "name" character varying DEFAULT '' NOT NULL, "email" character varying DEFAULT '' NOT NULL, "encrypted_password" character varying DEFAULT '' NOT NULL, "reset_password_token" character varying, "reset_password_sent_at" timestamp(6), "remember_created_at" timestamp(6), "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (1.1ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_email" ON "users" ("email")[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_users_on_reset_password_token" ON "users" ("reset_password_token")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.3ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260410000001') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateSocialAccounts (20260410000002)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (2.5ms)[0m  [1m[35mCREATE TABLE "social_accounts" ("id" bigserial primary key, "user_id" bigint NOT NULL, "provider" character varying NOT NULL, "uid" character varying NOT NULL, "username" character varying, "access_token" text, "refresh_token" text, "token_expires_at" timestamp(6), "extra_data" jsonb DEFAULT '{}', "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_7b2f868331"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+)[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE INDEX "index_social_accounts_on_user_id" ON "social_accounts" ("user_id")[0m
+  [1m[35m (0.8ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_social_accounts_on_user_id_and_provider" ON "social_accounts" ("user_id", "provider")[0m
+  [1m[35m (0.9ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_social_accounts_on_provider_and_uid" ON "social_accounts" ("provider", "uid")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260410000002') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateClips (20260410000003)
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (2.5ms)[0m  [1m[35mCREATE TABLE "clips" ("id" bigserial primary key, "user_id" bigint NOT NULL, "title" character varying NOT NULL, "description" text, "status" character varying DEFAULT 'pending', "duration" integer DEFAULT 7, "transition_effect" character varying DEFAULT 'fade', "ai_caption" text, "ai_hashtags" text, "upload_results" jsonb DEFAULT '{}', "error_message" text, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL, CONSTRAINT "fk_rails_da05a176b5"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+)[0m
+  [1m[35m (1.2ms)[0m  [1m[35mCREATE INDEX "index_clips_on_user_id" ON "clips" ("user_id")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260410000003') RETURNING "version"[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(4216972262891426850)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m

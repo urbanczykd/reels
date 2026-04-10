@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.3.0"
+ruby "~> 3.3"
 
 gem "rails", "~> 7.2.0"
 gem "pg", "~> 1.1"
@@ -9,6 +9,7 @@ gem "importmap-rails"
 gem "turbo-rails"
 gem "stimulus-rails"
 gem "tailwindcss-rails"
+gem "sprockets-rails"
 gem "jbuilder"
 gem "redis", ">= 4.0.1"
 gem "bcrypt", "~> 3.1.7"
@@ -21,11 +22,11 @@ gem "devise"
 gem "omniauth"
 gem "omniauth-google-oauth2"
 gem "omniauth-facebook"
-gem "omniauth-tiktok", github: "reu/omniauth-tiktok"
 gem "omniauth-rails_csrf_protection"
 
 # Background jobs
 gem "sidekiq"
+gem "connection_pool", "~> 2.4"
 
 # Video processing
 gem "streamio-ffmpeg"

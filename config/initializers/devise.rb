@@ -1,6 +1,8 @@
+require Rails.root.join("lib/omniauth/strategies/tiktok")
+require "devise/orm/active_record"
+
 Devise.setup do |config|
   config.mailer_sender = ENV.fetch("MAILER_FROM", "no-reply@reelmaker.app")
-  config.orm = :active_record
   config.authentication_keys = [:email]
   config.case_insensitive_keys = [:email]
   config.strip_whitespace_keys = [:email]
