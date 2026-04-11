@@ -1,0 +1,58 @@
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold text-white">My Clips</h1>
+    <%= link_to "New Clip", new_clip_path, class: "bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+  </div>
+
+  <% if @clips.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <% @clips.each do |clip| %>
+        <%= link_to clip_path(clip), class: "bg-gray-800 hover:bg-gray-750 rounded-xl overflow-hidden group" do %>
+          <div class="bg-gray-700 aspect-[9/16] max-h-56 flex items-center justify-center relative">
+            <% if clip.video.attached? %>
+              <video class="w-full h-full object-cover" muted>
+                <source src="<%= url_for(clip.video) %>" type="video/mp4">
+              </video>
+            <% else %>
+              <div class="text-4xl">
+                <%= clip.processing? ? "⏳" : clip.failed? ? "❌" : "🎞️" %>
+              </div>
+            <% end %>
+            <div class="absolute top-2 right-2">
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                <%= clip.ready? ? 'bg-green-900 text-green-300' :
+                    clip.failed? ? 'bg-red-900 text-red-300' :
+                    clip.processing? ? 'bg-yellow-900 text-yellow-300' :
+                    'bg-gray-700 text-gray-400' %>">
+                <%= clip.status.humanize %>
+              </span>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="font-medium text-white truncate"><%= clip.title %></div>
+            <div class="flex items-center justify-between mt-1">
+              <span class="text-gray-500 text-xs"><%= clip.duration %>s · <%= clip.transition_effect %></span>
+              <span class="text-gray-600 text-xs"><%= time_ago_in_words(clip.created_at) %> ago</span>
+            </div>
+            <% if clip.upload_results.any? %>
+              <div class="flex gap-1 mt-2">
+                <% clip.upload_results.each do |platform, result| %>
+                  <span class="text-xs px-1.5 py-0.5 rounded <%= result['status'] == 'success' ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400' %>">
+                    <%= platform %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-gray-800 rounded-xl p-16 text-center">
+      <div class="text-6xl mb-4">🎬</div>
+      <p class="text-gray-400 text-lg mb-2">No clips yet</p>
+      <p class="text-gray-600 text-sm mb-6">Upload some images and create your first reel</p>
+      <%= link_to "Create Your First Clip", new_clip_path, class: "bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg inline-block font-medium" %>
+    </div>
+  <% end %>
+</div>

@@ -1,5 +1,6 @@
 class Clip < ApplicationRecord
   belongs_to :user
+  belongs_to :soundtrack, optional: true
 
   has_many_attached :images
   has_one_attached :video
@@ -10,7 +11,7 @@ class Clip < ApplicationRecord
   MIN_IMAGES = 2
 
   validates :title, presence: true
-  validates :duration, inclusion: { in: 5..10 }
+  validates :duration, numericality: { only_integer: true, greater_than_or_equal_to: 5, less_than_or_equal_to: 600 }
   validates :transition_effect, inclusion: { in: TRANSITIONS }
   validates :status, inclusion: { in: STATUSES }
   validate :image_count_valid

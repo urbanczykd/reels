@@ -32,11 +32,10 @@
           <video controls class="w-full h-full object-contain" style="max-height: 600px;">
             <source src="<%= url_for(@clip.video) %>" type="video/mp4">
           </video>
-        <% elsif @clip.processing? %>
+        <% elsif @clip.processing? || @clip.pending? %>
           <div class="text-center p-8">
-            <div class="text-4xl animate-spin mb-4">⚙️</div>
-            <p class="text-gray-400">Generating your reel...</p>
-            <p class="text-gray-600 text-sm mt-1">This may take a moment</p>
+            <div class="text-4xl mb-2"><%= @clip.processing? ? "🎬" : "⏳" %></div>
+            <p class="text-gray-400 text-sm"><%= @clip.processing? ? "Rendering..." : "Queued..." %></p>
           </div>
         <% elsif @clip.failed? %>
           <div class="text-center p-8">
@@ -53,6 +52,29 @@
           </div>
         <% end %>
       </div>
+
+      <!-- Progress bar (pending or processing) -->
+      <% if @clip.pending? || @clip.processing? %>
+        <div id="progress-card" class="mt-4 bg-gray-800 rounded-xl p-5">
+          <div class="flex justify-between items-center mb-2">
+            <span id="progress-message" class="text-sm text-gray-300">
+              <%= @clip.pending? ? "Waiting in queue..." : "Generating your reel..." %>
+            </span>
+            <span id="progress-pct" class="text-sm font-mono text-indigo-400">
+              <%= @clip.generation_progress %>%
+            </span>
+          </div>
+          <div class="w-full bg-gray-700 rounded-full overflow-hidden" style="height:8px">
+            <div id="progress-bar"
+                 style="width:<%= @clip.generation_progress %>%;height:8px;border-radius:9999px;background:#6366f1;transition:width 0.7s ease-out"></div>
+          </div>
+          <div class="flex justify-between mt-3 text-xs">
+            <span id="stage-caption" style="color:<%= @clip.generation_progress >= 20 ? '#818cf8' : '#4b5563' %>">✦ AI caption</span>
+            <span id="stage-ffmpeg"  style="color:<%= @clip.generation_progress >= 30 ? '#818cf8' : '#4b5563' %>">✦ Video render</span>
+            <span id="stage-attach"  style="color:<%= @clip.generation_progress >= 95 ? '#818cf8' : '#4b5563' %>">✦ Finalise</span>
+          </div>
+        </div>
+      <% end %>
 
       <!-- Image Grid -->
       <div class="mt-4">
@@ -78,6 +100,21 @@
           <% if @clip.ai_hashtags.present? %>
             <p class="text-indigo-400 text-sm mt-3 font-mono"><%= @clip.ai_hashtags %></p>
           <% end %>
+        </div>
+      <% end %>
+
+      <% if @clip.soundtrack %>
+        <div class="bg-gray-800 rounded-xl p-6">
+          <h2 class="text-sm font-medium text-gray-400 mb-3">🎵 Background Music</h2>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-900/50 rounded-lg flex items-center justify-center">🎵</div>
+            <div>
+              <div class="text-white font-medium"><%= @clip.soundtrack.name %></div>
+              <% if @clip.soundtrack.duration_label %>
+                <div class="text-gray-500 text-xs"><%= @clip.soundtrack.duration_label %></div>
+              <% end %>
+            </div>
+          </div>
         </div>
       <% end %>
 
@@ -143,9 +180,42 @@
   </div>
 </div>
 
-<% if @clip.processing? %>
+<% if @clip.processing? || @clip.pending? %>
   <script>
-    // Auto-refresh while processing
-    setTimeout(() => window.location.reload(), 5000);
+    (function() {
+      const bar     = document.getElementById('progress-bar');
+      const pct     = document.getElementById('progress-pct');
+      const msg     = document.getElementById('progress-message');
+      const caption = document.getElementById('stage-caption');
+      const ffmpeg  = document.getElementById('stage-ffmpeg');
+      const attach  = document.getElementById('stage-attach');
+
+      const indigo = '#818cf8', muted = '#4b5563';
+
+      function setProgress(p, message) {
+        if (bar) bar.style.width = p + '%';
+        if (pct) pct.textContent = p + '%';
+        if (msg) msg.textContent = message;
+        if (caption) caption.style.color = p >= 20 ? indigo : muted;
+        if (ffmpeg)  ffmpeg.style.color  = p >= 30 ? indigo : muted;
+        if (attach)  attach.style.color  = p >= 95 ? indigo : muted;
+      }
+
+      function poll() {
+        fetch('<%= progress_clip_path(@clip) %>', { headers: { 'Accept': 'application/json' } })
+          .then(r => r.json())
+          .then(data => {
+            setProgress(data.progress, data.message);
+            if (data.status === 'ready' || data.status === 'failed') {
+              window.location.reload();
+            } else {
+              setTimeout(poll, 500);
+            }
+          })
+          .catch(() => setTimeout(poll, 1000));
+      }
+
+      setTimeout(poll, 500);
+    })();
   </script>
 <% end %>

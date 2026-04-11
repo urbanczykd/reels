@@ -5,6 +5,9 @@ class User < ApplicationRecord
 
   has_many :social_accounts, dependent: :destroy
   has_many :clips, dependent: :destroy
+  has_many :soundtracks, dependent: :destroy
+
+  scope :admins, -> { where(admin: true) }
 
   def social_account_for(provider)
     social_accounts.find_by(provider: provider.to_s)

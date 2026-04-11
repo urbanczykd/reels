@@ -1,0 +1,194 @@
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Admin Dashboard</h1>
+      <p class="text-gray-400 text-sm mt-1">System overview</p>
+    </div>
+    <%= link_to "Sidekiq →", "/admin/sidekiq", target: "_blank",
+        class: "bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium" %>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="bg-gray-800 rounded-xl p-5">
+      <div class="text-3xl font-bold text-white"><%= @stats[:users] %></div>
+      <div class="text-gray-400 text-sm mt-1">Total Users</div>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-5">
+      <div class="text-3xl font-bold text-white"><%= @stats[:clips] %></div>
+      <div class="text-gray-400 text-sm mt-1">Total Clips</div>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-5">
+      <div class="text-3xl font-bold text-green-400"><%= @stats[:ready_clips] %></div>
+      <div class="text-gray-400 text-sm mt-1">Ready Clips</div>
+    </div>
+    <div class="bg-gray-800 rounded-xl p-5">
+      <div class="text-3xl font-bold text-<%= @stats[:failed_clips] > 0 ? 'red' : 'gray' %>-400"><%= @stats[:failed_clips] %></div>
+      <div class="text-gray-400 text-sm mt-1">Failed Clips</div>
+    </div>
+  </div>
+
+  <!-- Status breakdown + System info -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+    <div class="bg-gray-800 rounded-xl p-6">
+      <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Clips by Status</h2>
+      <div class="space-y-2">
+        <% Clip::STATUSES.each do |status| %>
+          <% count = @stats[:clips_by_status][status] || 0 %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300"><%= status.humanize %></span>
+            <span class="font-mono text-sm font-medium
+              <%= status == 'ready' ? 'text-green-400' :
+                  status == 'failed' ? 'text-red-400' :
+                  status == 'processing' ? 'text-yellow-400' : 'text-gray-400' %>">
+              <%= count %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-xl p-6">
+      <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">System Info</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-400">Soundtracks</span>
+          <span class="text-white"><%= @stats[:soundtracks] %> (<%= Soundtrack.global.count %> default)</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Processing now</span>
+          <span class="text-yellow-400"><%= @stats[:processing_clips] %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Rails env</span>
+          <span class="text-white"><%= Rails.env %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Ruby</span>
+          <span class="text-white"><%= RUBY_VERSION %></span>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-700">
+          <%= link_to "Open Sidekiq Dashboard →", "/admin/sidekiq", target: "_blank",
+              class: "text-green-400 hover:text-green-300 text-sm" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing clips -->
+  <% if @processing_clips.any? %>
+    <div class="bg-gray-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-yellow-400 uppercase tracking-wider">
+          Processing (<%= @processing_clips.size %>)
+        </h2>
+        <%= button_to "Stop All", admin_stop_clip_path("bulk"),
+            params: { bulk: true },
+            class: "text-xs bg-red-800 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg",
+            data: { turbo_confirm: "Stop all #{@processing_clips.size} processing clips?" } if @processing_clips.size > 1 %>
+      </div>
+      <div class="space-y-3">
+        <% @processing_clips.each do |clip| %>
+          <div class="flex items-center justify-between bg-yellow-900/10 border border-yellow-900/40 rounded-lg p-3 gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                <span class="text-white text-sm font-medium"><%= clip.title %></span>
+              </div>
+              <div class="text-gray-500 text-xs mt-0.5 ml-4">
+                <%= clip.user.email %> · running for <%= time_ago_in_words(clip.updated_at) %>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <%= link_to "View", clip_path(clip),
+                  class: "text-xs text-gray-400 hover:text-white border border-gray-600 hover:border-gray-400 px-3 py-1.5 rounded-lg" %>
+              <%= button_to "Stop", admin_stop_clip_path(clip),
+                  class: "text-xs bg-red-800 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg",
+                  data: { turbo_confirm: "Stop \"#{clip.title}\"? It will be marked as failed." } %>
+              <%= button_to "Stop & Retry", admin_stop_clip_path(clip),
+                  params: { retry: true },
+                  class: "text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg",
+                  data: { turbo_confirm: "Stop and immediately re-queue \"#{clip.title}\"?" } %>
+              <%= button_to "Delete", admin_destroy_clip_path(clip), method: :delete,
+                  class: "text-xs bg-gray-700 hover:bg-red-900 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg",
+                  data: { turbo_confirm: "Delete \"#{clip.title}\" permanently?" } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Failed clips -->
+  <% if @failed_clips.any? %>
+    <div class="bg-gray-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-red-400 uppercase tracking-wider">
+          Failed Clips (<%= @failed_clips.size %>)
+        </h2>
+        <%= button_to "Retry All", admin_retry_clip_path("bulk"),
+            params: { bulk: true },
+            class: "text-xs bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg",
+            data: { turbo_confirm: "Re-queue all #{@failed_clips.size} failed clips?" } if @failed_clips.size > 1 %>
+      </div>
+      <div class="space-y-3">
+        <% @failed_clips.each do |clip| %>
+          <div class="flex items-start justify-between bg-red-900/20 border border-red-900/50 rounded-lg p-3 gap-4">
+            <div class="flex-1 min-w-0">
+              <div class="text-white text-sm font-medium"><%= clip.title %></div>
+              <div class="text-gray-500 text-xs mt-0.5">
+                <%= clip.user.email %> · failed <%= time_ago_in_words(clip.updated_at) %> ago
+              </div>
+              <% if clip.error_message.present? %>
+                <div class="text-red-400 text-xs mt-1 font-mono break-all"><%= clip.error_message.truncate(200) %></div>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <%= link_to "View", clip_path(clip),
+                  class: "text-xs text-gray-400 hover:text-white border border-gray-600 hover:border-gray-400 px-3 py-1.5 rounded-lg" %>
+              <%= button_to "Retry", admin_retry_clip_path(clip),
+                  class: "text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg",
+                  data: { turbo_confirm: "Re-queue \"#{clip.title}\"?" } %>
+              <%= button_to "Delete", admin_destroy_clip_path(clip), method: :delete,
+                  class: "text-xs bg-red-800 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg",
+                  data: { turbo_confirm: "Permanently delete \"#{clip.title}\" and its files?" } %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Recent clips table -->
+  <div class="bg-gray-800 rounded-xl p-6">
+    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Recent Clips</h2>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-gray-500 text-left border-b border-gray-700">
+          <th class="pb-2 font-medium">Title</th>
+          <th class="pb-2 font-medium">User</th>
+          <th class="pb-2 font-medium">Status</th>
+          <th class="pb-2 font-medium">Created</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-700/50">
+        <% @recent_clips.each do |clip| %>
+          <tr>
+            <td class="py-2 text-white"><%= link_to clip.title.truncate(40), clip_path(clip), class: "hover:text-indigo-400" %></td>
+            <td class="py-2 text-gray-400"><%= clip.user.email.truncate(30) %></td>
+            <td class="py-2">
+              <span class="px-2 py-0.5 rounded-full text-xs
+                <%= clip.ready? ? 'bg-green-900/50 text-green-400' :
+                    clip.failed? ? 'bg-red-900/50 text-red-400' :
+                    clip.processing? ? 'bg-yellow-900/50 text-yellow-400' :
+                    'bg-gray-700 text-gray-400' %>">
+                <%= clip.status %>
+              </span>
+            </td>
+            <td class="py-2 text-gray-500"><%= time_ago_in_words(clip.created_at) %> ago</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

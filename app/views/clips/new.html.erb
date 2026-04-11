@@ -24,12 +24,51 @@
           placeholder: "Optional description to help AI generate better captions..." %>
     </div>
 
+    <!-- Soundtrack -->
+    <div>
+      <%= f.label :soundtrack_id, "Background Music", class: "block text-sm font-medium text-gray-300 mb-1" %>
+      <% if @soundtracks.any? %>
+        <%
+          all_opts = @soundtracks.map { |s| [s.id, s.duration_seconds] }.to_h
+          grouped  = [
+            ["Default Tracks", @soundtracks.select(&:global?).map  { |s| ["#{s.name}#{s.duration_label ? " · #{s.duration_label}" : ""}", s.id, { data: { duration: s.duration_seconds.to_i } }] }],
+            ["My Uploads",     @soundtracks.reject(&:global?).map  { |s| ["#{s.name}#{s.duration_label ? " · #{s.duration_label}" : ""}", s.id, { data: { duration: s.duration_seconds.to_i } }] }]
+          ].reject { |_, opts| opts.empty? }
+        %>
+        <%= f.select :soundtrack_id,
+            grouped_options_for_select(grouped),
+            { include_blank: "No music (silent)" },
+            id: "soundtrack-select",
+            class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      <% else %>
+        <div class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 flex items-center justify-between">
+          <span class="text-gray-500 text-sm">No soundtracks uploaded yet</span>
+          <%= link_to "Upload one →", new_soundtrack_path, class: "text-indigo-400 hover:text-indigo-300 text-sm" %>
+        </div>
+      <% end %>
+
+      <!-- Fit to audio toggle -->
+      <label id="fit-audio-label" class="hidden mt-2 flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" id="fit-audio-checkbox" class="rounded border-gray-600 text-indigo-600 focus:ring-indigo-500">
+        <span class="text-sm text-gray-400">Fit reel duration to audio length</span>
+        <span id="fit-audio-hint" class="text-xs text-gray-600"></span>
+      </label>
+    </div>
+
+    <!-- Duration + Transition -->
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <%= f.label :duration, "Duration (seconds)", class: "block text-sm font-medium text-gray-300 mb-1" %>
-        <%= f.select :duration, (5..10).to_a.map { |d| ["#{d} seconds", d] },
-            { selected: 7 },
-            class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        <div class="flex items-center justify-between mb-1">
+          <%= f.label :duration, "Duration (seconds)", class: "text-sm font-medium text-gray-300" %>
+          <span id="duration-display" class="text-xs text-indigo-400 hidden"></span>
+        </div>
+        <%= f.number_field :duration,
+            value: @clip.duration.presence || 7,
+            min: 5, max: 600, step: 1,
+            id: "duration-input",
+            class: "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500",
+            placeholder: "5 – 600" %>
+        <p class="text-gray-600 text-xs mt-1">Short reels: 5–60s · TikTok max: 600s</p>
       </div>
 
       <div>
@@ -77,6 +116,66 @@
 </div>
 
 <script>
+(function() {
+  const select   = document.getElementById('soundtrack-select');
+  const label    = document.getElementById('fit-audio-label');
+  const checkbox = document.getElementById('fit-audio-checkbox');
+  const hint     = document.getElementById('fit-audio-hint');
+  const durInput = document.getElementById('duration-input');
+  let savedDuration = durInput ? durInput.value : '';
+
+  function selectedDuration() {
+    if (!select) return null;
+    const opt = select.options[select.selectedIndex];
+    const d = opt && opt.dataset.duration ? parseInt(opt.dataset.duration, 10) : null;
+    return d && d > 0 ? d : null;
+  }
+
+  function formatDuration(s) {
+    if (!s) return '';
+    const m = Math.floor(s / 60), sec = s % 60;
+    return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+  }
+
+  function updateFitUI() {
+    const d = selectedDuration();
+    if (d) {
+      label.classList.remove('hidden');
+      hint.textContent = `(${formatDuration(d)})`;
+    } else {
+      label.classList.add('hidden');
+      checkbox.checked = false;
+      if (durInput) durInput.disabled = false;
+    }
+  }
+
+  if (select) {
+    select.addEventListener('change', function() {
+      if (checkbox.checked) {
+        checkbox.checked = false;
+        if (durInput) { durInput.disabled = false; durInput.value = savedDuration; }
+      }
+      updateFitUI();
+    });
+  }
+
+  if (checkbox) {
+    checkbox.addEventListener('change', function() {
+      const d = selectedDuration();
+      if (this.checked && d) {
+        savedDuration = durInput.value;
+        durInput.value = d;
+        durInput.disabled = true;
+      } else {
+        durInput.disabled = false;
+        durInput.value = savedDuration;
+      }
+    });
+  }
+
+  updateFitUI();
+})();
+
 document.getElementById('images-input').addEventListener('change', function(e) {
   const files = Array.from(e.target.files).slice(0, 20);
   const preview = document.getElementById('image-preview');
