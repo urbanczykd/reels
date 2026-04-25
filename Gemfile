@@ -26,7 +26,7 @@ gem "omniauth-rails_csrf_protection"
 
 # Background jobs
 gem "sidekiq"
-gem "connection_pool", "~> 2.4"
+gem "connection_pool", "~> 3.0"
 
 # Video processing
 gem "streamio-ffmpeg"
